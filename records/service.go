@@ -24,20 +24,7 @@ func (r *RecordsService) GetAuthorization(batchRequest []BatchRequest) (*Authori
 	return &authResponse, nil
 }
 
-func (r *RecordsService) UploadDocument(files []FileRequest, documentType string, documentDate *int, tags []string, title *string) ([]string, error) {
-
-	var batchRequest []BatchRequest
-	for _, file := range files {
-		fileSize := r.getFileSizeFromReader(file.Reader)
-		contentType := getContentType(file.FileName)
-		batchRequest = append(batchRequest, BatchRequest{
-			DocumentType: documentType,
-			DocumentDate: documentDate,
-			Tags:         tags,
-			Files:        []File{{ContentType: contentType, FileSize: fileSize}},
-		})
-	}
-
+func (r *RecordsService) UploadDocument(files []FileRequest, batchRequest []BatchRequest) ([]string, error) {
 	authResp, err := r.GetAuthorization(batchRequest)
 	if err != nil {
 		return nil, err
@@ -91,10 +78,4 @@ func (r *RecordsService) upload(file io.Reader, fileName, url string, fields map
 		return errors.New("upload failed")
 	}
 	return nil
-}
-
-func (r *RecordsService) getFileSizeFromReader(file io.Reader) int {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
-	return buf.Len()
 }

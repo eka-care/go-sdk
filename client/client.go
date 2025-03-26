@@ -10,7 +10,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-func NewClient(baseURL string, token, id, secret, key *string) *Client {
+func NewClient(baseURL string, token *string) *Client {
 	return &Client{
 		BaseURL:    baseURL,
 		token:      token,
