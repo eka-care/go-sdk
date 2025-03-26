@@ -1,5 +1,7 @@
 package records
 
+import "io"
+
 type BatchRequest struct {
 	DocumentType string   `json:"dt"`
 	DocumentDate *int     `json:"dd_e,omitempty"`
@@ -11,6 +13,11 @@ type BatchRequest struct {
 type File struct {
 	ContentType string `json:"contentType"`
 	FileSize    int    `json:"file_size"`
+}
+
+type FileRequest struct {
+	FileName string
+	Reader   io.Reader
 }
 
 type AuthorizationResponse struct {

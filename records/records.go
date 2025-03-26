@@ -8,14 +8,14 @@ import (
 )
 
 type RecordsService struct {
-	client *client.Client
-	url    string
+	client           *client.Client
+	authorizationURL string
 }
 
 func NewRecordsService(client *client.Client) *RecordsService {
-	url := fmt.Sprintf("%s%s", client.BaseURL, UPLOAD_AUTHORIZATION_PATH)
+	authorizationURL := fmt.Sprintf("%s%s", client.BaseURL, UPLOAD_AUTHORIZATION_PATH)
 	return &RecordsService{
-		client: client,
-		url:    url,
+		client:           client,
+		authorizationURL: authorizationURL,
 	}
 }
