@@ -15,7 +15,7 @@ func TestUploadSingleLapReport(t *testing.T) {
 	client := client.NewClient(host, &token, nil, nil, nil)
 
 	recordsService := records.NewRecordsService(client)
-	filePath := "lab_report.jpg"
+	filePath := ""
 	data, err := os.Open(filePath)
 	if err != nil {
 		t.Errorf("file not found', got err: %s", err)
@@ -39,7 +39,7 @@ func TestUploadMultipleLapReport(t *testing.T) {
 	client := client.NewClient(host, &token, nil, nil, nil)
 
 	recordsService := records.NewRecordsService(client)
-	filePath := "lab_report.jpg"
+	filePath := ""
 	data, err := os.Open(filePath)
 	if err != nil {
 		t.Errorf("file not found', got err: %s", err)
