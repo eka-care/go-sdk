@@ -10,8 +10,9 @@ import (
 )
 
 func TestUploadSingleLapReport(t *testing.T) {
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZHNpbmRpYXN0YWdpbmciLCJjLWlkIjoiYWRzaW5kaWFzdGFnaW5nIiwiZXhwIjoxNzQyOTkxODQ4LCJpYXQiOjE3NDI5OTEyNDgsImlzcyI6ImVrYS5jYXJlIn0.0mGmcV44WhThxu7dWqNc8yc0yJriXDGUklnz-719gfY"
-	client := client.NewClient("https://api.dev.eka.care", &token, nil, nil, nil)
+	token := ""
+	host := ""
+	client := client.NewClient(host, &token, nil, nil, nil)
 
 	recordsService := records.NewRecordsService(client)
 	filePath := "lab_report.jpg"
@@ -33,8 +34,9 @@ func TestUploadSingleLapReport(t *testing.T) {
 }
 
 func TestUploadMultipleLapReport(t *testing.T) {
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZHNpbmRpYXN0YWdpbmciLCJjLWlkIjoiYWRzaW5kaWFzdGFnaW5nIiwiZXhwIjoxNzQyOTkxODQ4LCJpYXQiOjE3NDI5OTEyNDgsImlzcyI6ImVrYS5jYXJlIn0.0mGmcV44WhThxu7dWqNc8yc0yJriXDGUklnz-719gfY"
-	client := client.NewClient("https://api.dev.eka.care", &token, nil, nil, nil)
+	token := ""
+	host := ""
+	client := client.NewClient(host, &token, nil, nil, nil)
 
 	recordsService := records.NewRecordsService(client)
 	filePath := "lab_report.jpg"
