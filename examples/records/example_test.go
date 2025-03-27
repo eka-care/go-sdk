@@ -1,7 +1,6 @@
 package records_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -13,7 +12,7 @@ func TestUploadSingleLapReport(t *testing.T) {
 	token := os.Getenv("API_TOKEN")
 	host := os.Getenv("API_HOST")
 	if token == "" || host == "" {
-		t.Errorf("Expected both token and host', got token: %s host %s", token, host)
+		t.Fatalf("Expected both token and host', got token: %s host %s", token, host)
 	}
 
 	client := client.NewClient(host, &token)
@@ -21,7 +20,7 @@ func TestUploadSingleLapReport(t *testing.T) {
 	filePath := "lap_report.jpg"
 	data, err := os.Open(filePath)
 	if err != nil {
-		t.Errorf("file not found', got err: %s", err)
+		t.Fatalf("file not found', got err: %s", err)
 	}
 
 	files := []records.FileRequest{
@@ -46,10 +45,9 @@ func TestUploadSingleLapReport(t *testing.T) {
 
 	documentID, err := recordsService.UploadDocument(files, batchRequest)
 	if err != nil {
-		fmt.Println("Error:", err)
-		t.Errorf("Expected success', got err: %s", err)
+		t.Fatalf("Expected success', got err: %s", err)
 	} else {
-		fmt.Println("Uploaded Document ID:", documentID)
+		t.Log("Uploaded Document ID:", documentID)
 	}
 }
 
@@ -57,7 +55,7 @@ func TestUploadMultipleLapReport(t *testing.T) {
 	token := os.Getenv("API_TOKEN")
 	host := os.Getenv("API_HOST")
 	if token == "" || host == "" {
-		t.Errorf("Expected both token and host', got token: %s host %s", token, host)
+		t.Fatalf("Expected both token and host', got token: %s host %s", token, host)
 	}
 
 	client := client.NewClient(host, &token)
@@ -65,7 +63,7 @@ func TestUploadMultipleLapReport(t *testing.T) {
 	filePath := "lap_report.jpg"
 	data, err := os.Open(filePath)
 	if err != nil {
-		t.Errorf("file not found', got err: %s", err)
+		t.Fatalf("file not found', got err: %s", err)
 	}
 
 	files := []records.FileRequest{
@@ -87,9 +85,8 @@ func TestUploadMultipleLapReport(t *testing.T) {
 
 	documentID, err := recordsService.UploadDocument(files, batchRequest)
 	if err != nil {
-		fmt.Println("Error:", err)
-		t.Errorf("Expected success', got err: %s", err)
+		t.Fatalf("Expected success', got err: %s", err)
 	} else {
-		fmt.Println("Uploaded Document ID:", documentID)
+		t.Log("Uploaded Document ID:", documentID)
 	}
 }
