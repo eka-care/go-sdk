@@ -1,7 +1,5 @@
 package records
 
-import "io"
-
 type BatchRequest struct {
 	DocumentType DocumentTypeQueryParam `json:"dt"`
 	DocumentDate *int                   `json:"dd_e,omitempty"`
@@ -17,7 +15,7 @@ type File struct {
 
 type FileRequest struct {
 	FileName     string
-	Reader       io.Reader
+	Content      []byte
 	DocumentType DocumentTypeQueryParam
 	DocumentDate *int
 }

@@ -1,6 +1,7 @@
 package records_test
 
 import (
+	"io"
 	"os"
 	"testing"
 
@@ -14,26 +15,32 @@ func TestUploadSingleLapReport(t *testing.T) {
 	if token == "" || host == "" {
 		t.Fatalf("Expected both token and host', got token: %s host %s", token, host)
 	}
-
 	client := client.NewClient(host, &token)
 	recordsService := records.NewRecordsService(client)
+
 	filePath := "lap_report.jpg"
-	data, err := os.Open(filePath)
+	file, err := os.Open(filePath)
 	if err != nil {
 		t.Fatalf("file not found', got err: %s", err)
+	}
+	defer file.Close() // Always close file
+
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		t.Fatalf("error reading file: %s", err)
 	}
 
 	files := []records.FileRequest{
 		{
 			FileName:     filePath,
-			Reader:       data,
+			Content:      fileBytes,
 			DocumentType: records.LabReportQP,
 		},
 	}
 
 	var batchRequest []records.BatchRequest
 	for _, file := range files {
-		fileSize := records.GetFileSize(file.Reader)
+		fileSize := len(file.Content)
 		contentType := records.GetContentType(file.FileName)
 		batchRequest = append(batchRequest, records.BatchRequest{
 			DocumentType: file.DocumentType,
@@ -61,19 +68,26 @@ func TestUploadMultipleLapReport(t *testing.T) {
 	client := client.NewClient(host, &token)
 	recordsService := records.NewRecordsService(client)
 	filePath := "lap_report.jpg"
-	data, err := os.Open(filePath)
+	file, err := os.Open(filePath)
 	if err != nil {
 		t.Fatalf("file not found', got err: %s", err)
 	}
 
+	defer file.Close() // Always close file
+
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		t.Fatalf("error reading file: %s", err)
+	}
+
 	files := []records.FileRequest{
-		{FileName: filePath, Reader: data},
-		{FileName: filePath, Reader: data},
+		{FileName: filePath, Content: fileBytes},
+		{FileName: filePath, Content: fileBytes},
 	}
 
 	var batchRequest []records.BatchRequest
 	for _, file := range files {
-		fileSize := records.GetFileSize(file.Reader)
+		fileSize := len(file.Content)
 		contentType := records.GetContentType(file.FileName)
 		batchRequest = append(batchRequest, records.BatchRequest{
 			DocumentType: file.DocumentType,
