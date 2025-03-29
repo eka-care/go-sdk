@@ -8,26 +8,35 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"sync"
 	"time"
 )
 
-func (r *RecordsService) GetAuthorization(batchRequest []BatchRequest) (*AuthorizationResponse, error) {
+func getStringAsPointer(s string) *string {
+	return &s
+}
+
+func (r *RecordsService) getUploadURL() string {
+	return fmt.Sprintf("%s%s", r.client.GetBaseURL(), UploadRecordAPIPath)
+}
+
+func (r *RecordsService) getAuthorization(batchRequest []BatchRequest) (*authorizationResponse, error) {
 	data, _ := json.Marshal(map[string]interface{}{"batch_request": batchRequest})
-	resp, err := r.client.Request("POST", r.authorizationURL, data, nil)
+	resp, err := r.client.Request(http.MethodPost, r.getUploadURL(), data, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var authResponse AuthorizationResponse
-	err = json.NewDecoder(resp.Body).Decode(&authResponse)
-	if err != nil {
+	var authResponse authorizationResponse
+	if err = json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
 		return nil, err
 	}
+
 	return &authResponse, nil
 }
 
-func (r *RecordsService) UploadDocument(files []FileRequest, batchRequest []BatchRequest) ([]string, error) {
-	authResp, err := r.GetAuthorization(batchRequest)
+func (r *RecordsService) UploadDocument(batchRequest []BatchRequest) (*UploadResponse, error) {
+	authResp, err := r.getAuthorization(batchRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -36,27 +45,40 @@ func (r *RecordsService) UploadDocument(files []FileRequest, batchRequest []Batc
 		return nil, errors.New("no upload URL received")
 	}
 
-	var documentIDs []string
-	for index, batch := range authResp.BatchResponse {
+	var response UploadResponse
+	for i, batch := range authResp.BatchResponse {
 		if len(batch.Forms) == 0 {
+			response.DocumentIDs = append(response.DocumentIDs, nil)
 			continue
 		}
 
-		documentID := batch.DocumentID
-		form := batch.Forms[0]
-		err = r.upload(files[index].Content, files[index].FileName, form.URL, form.Fields)
-
-		if err != nil {
-			return nil, err
+		var errUpload error
+		var wg sync.WaitGroup
+		for j := range batch.Forms {
+			wg.Add(1)
+			go func(k int) {
+				defer wg.Done()
+				if err := r.upload(batchRequest[i].Files[k].Content, batch.Forms[k].URL, batch.Forms[k].Fields); err != nil {
+					errUpload = err
+					return
+				}
+			}(j)
 		}
 
-		documentIDs = append(documentIDs, documentID)
+		wg.Wait()
+
+		if errUpload != nil {
+			response.DocumentIDs = append(response.DocumentIDs, nil)
+			continue
+		}
+
+		response.DocumentIDs = append(response.DocumentIDs, getStringAsPointer(batch.DocumentID))
 	}
 
-	return documentIDs, nil
+	return &response, nil
 }
 
-func (r *RecordsService) upload(file []byte, fileName, url string, fields map[string]string) error {
+func (r *RecordsService) upload(file []byte, url string, fields map[string]string) error {
 	var b bytes.Buffer
 	writer := multipart.NewWriter(&b)
 
@@ -68,7 +90,7 @@ func (r *RecordsService) upload(file []byte, fileName, url string, fields map[st
 	}
 
 	// Create form file field
-	part, err := writer.CreateFormFile("file", fileName)
+	part, err := writer.CreateFormFile("file", "randomfilename")
 	if err != nil {
 		return err
 	}
@@ -83,12 +105,11 @@ func (r *RecordsService) upload(file []byte, fileName, url string, fields map[st
 	writer.Close()
 
 	// Create HTTP request with Content-Length
-	req, err := http.NewRequest("POST", url, &b)
+	req, err := http.NewRequest(http.MethodPost, url, &b)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.ContentLength = int64(b.Len()) // Set Content-Length explicitly
+	req.Header.Set(HeaderContentType, writer.FormDataContentType())
 
 	// Use an HTTP client with a timeout
 	client := &http.Client{Timeout: 30 * time.Second}

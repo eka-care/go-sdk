@@ -4,15 +4,20 @@ import (
 	"net/http"
 )
 
+type ClientInterface interface {
+	Request(method, url string, data []byte, headers map[string]string) (*http.Response, error)
+	GetBaseURL() string
+}
+
 type Client struct {
-	BaseURL    string
-	token      *string
+	baseURL    string
+	token      string
 	HTTPClient *http.Client
 }
 
-func NewClient(baseURL string, token *string) *Client {
+func NewClient(baseURL, token string) ClientInterface {
 	return &Client{
-		BaseURL:    baseURL,
+		baseURL:    baseURL,
 		token:      token,
 		HTTPClient: &http.Client{},
 	}

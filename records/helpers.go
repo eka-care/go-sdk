@@ -3,7 +3,7 @@ package records
 import (
 	"bytes"
 	"io"
-	"path/filepath"
+	"net/http"
 )
 
 func GetFileSize(file io.Reader) int {
@@ -12,16 +12,6 @@ func GetFileSize(file io.Reader) int {
 	return buf.Len()
 }
 
-func GetContentType(filePath string) string {
-	ext := filepath.Ext(filePath)
-	switch ext {
-	case ".jpg", ".jpeg":
-		return "image/jpeg"
-	case ".png":
-		return "image/png"
-	case ".pdf":
-		return "application/pdf"
-	default:
-		return "application/octet-stream"
-	}
+func GetContentType(content []byte) string {
+	return http.DetectContentType(content)
 }

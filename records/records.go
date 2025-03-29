@@ -2,20 +2,19 @@
 package records
 
 import (
-	"fmt"
-
 	"github.com/ekacare/go-sdk/client"
 )
 
-type RecordsService struct {
-	client           *client.Client
-	authorizationURL string
+type Records interface {
+	UploadDocument(batchRequest []BatchRequest) (*UploadResponse, error)
 }
 
-func NewRecordsService(client *client.Client) *RecordsService {
-	authorizationURL := fmt.Sprintf("%s%s", client.BaseURL, UPLOAD_AUTHORIZATION_PATH)
+type RecordsService struct {
+	client client.ClientInterface
+}
+
+func NewRecordsService(client client.ClientInterface) Records {
 	return &RecordsService{
-		client:           client,
-		authorizationURL: authorizationURL,
+		client: client,
 	}
 }
