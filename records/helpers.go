@@ -12,6 +12,24 @@ func GetFileSize(file io.Reader) int {
 	return buf.Len()
 }
 
-func GetContentType(content []byte) string {
-	return http.DetectContentType(content)
+func GetContentType(reader io.Reader) string {
+	// Create a buffer to read the first 512 bytes
+	buffer := make([]byte, 512)
+	n, err := reader.Read(buffer)
+	if err != nil && err != io.EOF {
+		return ""
+	}
+
+	// Reset the reader to allow re-reading the file
+	if seeker, ok := reader.(io.Seeker); ok {
+		_, err = seeker.Seek(0, io.SeekStart)
+		if err != nil {
+			return ""
+		}
+	} else {
+		return ""
+	}
+
+	// Detect content type
+	return http.DetectContentType(buffer[:n])
 }

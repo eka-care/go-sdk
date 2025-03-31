@@ -6,7 +6,7 @@ import (
 )
 
 type Records interface {
-	UploadDocument(batchRequest []BatchRequest) (*UploadResponse, error)
+	UploadDocument(batchRequest UploadRequest) (*UploadResponse, error)
 }
 
 type RecordsService struct {

@@ -1,7 +1,6 @@
 package records_test
 
 import (
-	"io"
 	"os"
 	"testing"
 
@@ -27,31 +26,26 @@ func TestUploadSingleFile(t *testing.T) {
 
 	defer file.Close() // Always close file
 
-	fileBytes, err := io.ReadAll(file)
+	// Get file size using Stat
+	fileInfo, err := file.Stat()
 	if err != nil {
-		t.Fatalf("error reading file: %+v", err)
+		t.Fatalf("failed to get file info: %+v", err)
 	}
-
-	files := []records.BatchRequest{
-		{
-			Files: []records.File{
-				{ContentType: records.GetContentType(fileBytes), FileSize: len(fileBytes)},
-			},
-			DocumentType: records.LabReportQP,
-		},
-	}
+	fileSize := fileInfo.Size()
 
 	var batchRequest []records.BatchRequest
-	for _, file := range files {
-		batchRequest = append(batchRequest, records.BatchRequest{
-			DocumentType: file.DocumentType,
-			DocumentDate: file.DocumentDate,
-			Tags:         nil,
-			Files:        []records.File{{ContentType: file.Files[0].ContentType, FileSize: file.Files[0].FileSize}},
-		})
-	}
+	batchRequest = append(batchRequest, records.BatchRequest{
+		DocumentType: records.LabReportQP,
+		Files: []records.File{
+			{
+				Content:     file,
+				ContentType: records.GetContentType(file),
+				FileSize:    fileSize,
+			},
+		},
+	})
 
-	documentIDs, err := recordsService.UploadDocument(batchRequest)
+	documentIDs, err := recordsService.UploadDocument(records.UploadRequest{Request: batchRequest, Tasks: []records.Task{records.SmartReportTaskQP, records.PIITaskQP}})
 	if err != nil {
 		t.Fatalf("Expected success', got err: %+v", err)
 	} else {
@@ -76,35 +70,23 @@ func TestUploadMultipleFiles(t *testing.T) {
 
 	defer file.Close() // Always close file
 
-	fileBytes, err := io.ReadAll(file)
+	// Get file size using Stat
+	fileInfo, err := file.Stat()
 	if err != nil {
-		t.Fatalf("error reading file: %+v", err)
+		t.Fatalf("failed to get file info: %+v", err)
 	}
-
-	files := []records.BatchRequest{
-		{
-			Files: []records.File{
-				{ContentType: records.GetContentType(fileBytes), FileSize: len(fileBytes)},
-				{ContentType: records.GetContentType(fileBytes), FileSize: len(fileBytes)},
-			},
-			DocumentType: records.LabReportQP,
-		},
-	}
+	fileSize := fileInfo.Size()
 
 	var batchRequest []records.BatchRequest
-	for _, file := range files {
-		batchRequest = append(batchRequest, records.BatchRequest{
-			DocumentType: file.DocumentType,
-			DocumentDate: file.DocumentDate,
-			Tags:         nil,
-			Files: []records.File{
-				{ContentType: file.Files[0].ContentType, FileSize: file.Files[0].FileSize},
-				{ContentType: file.Files[1].ContentType, FileSize: file.Files[1].FileSize},
-			},
-		})
-	}
+	batchRequest = append(batchRequest, records.BatchRequest{
+		DocumentType: records.LabReportQP,
+		Files: []records.File{
+			{Content: file, ContentType: records.GetContentType(file), FileSize: fileSize},
+			{Content: file, ContentType: records.GetContentType(file), FileSize: fileSize},
+		},
+	})
 
-	documentID, err := recordsService.UploadDocument(batchRequest)
+	documentID, err := recordsService.UploadDocument(records.UploadRequest{Request: batchRequest})
 	if err != nil {
 		t.Fatalf("Expected success', got err: %+v", err)
 	} else {

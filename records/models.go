@@ -1,5 +1,7 @@
 package records
 
+import "io"
+
 type DocumentTypeQueryParam string
 
 const PrescriptionQP DocumentTypeQueryParam = "ps"
@@ -16,9 +18,19 @@ func (d DocumentTypeQueryParam) AsP() *DocumentTypeQueryParam {
 }
 
 type File struct {
-	Content     []byte `json:"-"`
-	ContentType string `json:"contentType"`
-	FileSize    int    `json:"file_size"`
+	Content     io.Reader `json:"-"`
+	ContentType string    `json:"contentType"`
+	FileSize    int64     `json:"file_size"`
+}
+
+const SmartReportTaskQP Task = "smart"
+const PIITaskQP Task = "pii"
+const ClassificationTaskQP Task = "classification"
+
+type Task string
+
+func (t Task) AsP() *Task {
+	return &t
 }
 
 type BatchRequest struct {
@@ -27,6 +39,12 @@ type BatchRequest struct {
 	Tags         []string               `json:"tg,omitempty"`
 	Files        []File                 `json:"files"`
 	Title        string                 `json:"title,omitempty"`
+}
+
+type UploadRequest struct {
+	Request []BatchRequest `json:"request"`
+	Tasks   []Task         `json:"-"`
+	Batch   bool           `json:"-"`
 }
 
 type authorizationResponse struct {
