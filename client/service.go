@@ -7,13 +7,16 @@ import (
 	"net/http"
 )
 
+const AuthorizationHeader string = "Authorization"
+const BearerPrefix string = "Bearer "
+
 func (c *Client) Request(method, url string, data []byte, headers map[string]string) (*http.Response, error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", *c.token))
+	req.Header.Set(AuthorizationHeader, fmt.Sprintf("%s%v", BearerPrefix, c.token))
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
@@ -26,5 +29,10 @@ func (c *Client) Request(method, url string, data []byte, headers map[string]str
 	if resp.StatusCode >= 400 {
 		return nil, errors.New("API request failed")
 	}
+
 	return resp, nil
+}
+
+func (c *Client) GetBaseURL() string {
+	return c.baseURL
 }

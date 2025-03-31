@@ -1,3 +1,4 @@
 package records
 
-const UPLOAD_AUTHORIZATION_PATH string = "/mr/api/v1/docs"
+const UploadRecordAPIPath string = "/mr/api/v1/docs"
+const HeaderContentType string = "Content-Type"
